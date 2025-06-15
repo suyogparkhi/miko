@@ -1,0 +1,6 @@
+[risc0]
+version = "0.20"
+
+[build]
+guest_dir = "guest"
+host_dir = "host" 

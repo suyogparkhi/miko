@@ -1,0 +1,12 @@
+[package]
+name = "private-swap-guest"
+version = "0.1.0"
+edition = "2021"
+
+[dependencies]
+risc0-zkvm = "0.20"
+serde = { version = "1.0", features = ["derive"] }
+
+[[bin]]
+name = "private-swap-guest"
+path = "src/main.rs" 

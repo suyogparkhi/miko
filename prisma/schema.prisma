@@ -1,0 +1,106 @@
+// Prisma schema for private swap dapp
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id        String   @id @default(cuid())
+  publicKey String   @unique
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  
+  // User statistics
+  totalSwaps   Int @default(0)
+  totalVolume  Float @default(0)
+  
+  // Relationships
+  intents SwapIntent[]
+  
+  @@map("users")
+}
+
+model SwapIntent {
+  id                String   @id @default(cuid())
+  userAddress       String
+  inputMint         String
+  outputMint        String
+  inputAmount       Float
+  minOutputAmount   Float
+  status            SwapStatus @default(PENDING)
+  createdAt         DateTime @default(now())
+  updatedAt         DateTime @updatedAt
+  
+  // Optional fields
+  proofGenerated    Boolean? @default(false)
+  txSignature       String?
+  error             String?
+  
+  // Relationships
+  user   User?   @relation(fields: [userAddress], references: [publicKey])
+  proofs ZKProof[]
+  
+  @@map("swap_intents")
+}
+
+model ZKProof {
+  id            String      @id @default(cuid())
+  intentId      String
+  proof         String      @default("")
+  publicInputs  Json        @default("{}")
+  status        ProofStatus @default(GENERATING)
+  createdAt     DateTime    @default(now())
+  updatedAt     DateTime    @updatedAt
+  
+  // Optional fields
+  error         String?
+  
+  // Relationships
+  intent SwapIntent @relation(fields: [intentId], references: [id], onDelete: Cascade)
+  
+  @@map("zk_proofs")
+}
+
+model RelayerStatus {
+  id            String   @id @default(cuid())
+  isOnline      Boolean  @default(true)
+  lastHeartbeat DateTime @default(now())
+  queueSize     Int      @default(0)
+  processedToday Int     @default(0)
+  errors        Json     @default("[]")
+  updatedAt     DateTime @updatedAt
+  
+  @@map("relayer_status")
+}
+
+model SystemMetrics {
+  id                String   @id @default(cuid())
+  totalIntents      Int      @default(0)
+  pendingIntents    Int      @default(0)
+  completedIntents  Int      @default(0)
+  failedIntents     Int      @default(0)
+  totalVolume       Float    @default(0)
+  uniqueUsers       Int      @default(0)
+  recordedAt        DateTime @default(now())
+  
+  @@map("system_metrics")
+}
+
+enum SwapStatus {
+  PENDING
+  PROCESSING
+  COMPLETED
+  FAILED
+  CANCELLED
+}
+
+enum ProofStatus {
+  GENERATING
+  GENERATED
+  VERIFIED
+  FAILED
+} 

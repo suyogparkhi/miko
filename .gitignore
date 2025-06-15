@@ -1,0 +1,161 @@
+# ======================================
+# 🔒 ENVIRONMENT & SECRETS
+# ======================================
+
+# Environment files (keep .env.example files)
+.env
+.env.local
+.env.*.local
+.env.docker.local
+
+# Component-specific env files
+/relayer/.env
+/frontend/.env
+/contracts/.env
+
+# Keypairs and sensitive files
+*.json
+!package*.json
+!tsconfig*.json
+!anchor.json
+!.vscode/*.json
+relayer-keypair.json
+deployer-keypair.json
+
+# ======================================
+# 📦 DEPENDENCIES & BUILD ARTIFACTS
+# ======================================
+
+# Node.js
+node_modules/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+.pnpm-debug.log*
+
+# Next.js
+/.next/
+/out/
+next-env.d.ts
+
+# TypeScript
+*.tsbuildinfo
+
+# ======================================
+# 🦀 RUST & ANCHOR
+# ======================================
+
+# Rust
+/target/
+**/**/target/
+Cargo.lock
+debug/
+release/
+
+# Anchor
+.anchor/
+program-keypair.json
+test-keypair.json
+
+# ======================================
+# 🔧 ZK-COPROCESSOR & RISC0
+# ======================================
+
+# Risc0 artifacts
+/zk-coprocessor/target/
+/relayer/zk-coprocessor/target/
+*.risc0
+
+# ======================================
+# 🐳 DOCKER & DEPLOYMENT
+# ======================================
+
+# Docker
+.dockerignore
+docker-compose.override.yml
+
+# Deployment artifacts
+deploy-log.txt
+*.deploy
+
+# ======================================
+# 💻 DEVELOPMENT & TOOLS
+# ======================================
+
+# IDE
+.vscode/settings.json
+.vscode/launch.json
+.idea/
+*.swp
+*.swo
+*~
+
+# OS
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
+Thumbs.db
+
+# Logs
+logs/
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+lerna-debug.log*
+.pnpm-debug.log*
+
+# Temporary files
+tmp/
+temp/
+.cache/
+
+# ======================================
+# 📊 MONITORING & ANALYTICS
+# ======================================
+
+# Error tracking
+.sentry-release
+.sentryclirc
+
+# Analytics
+analytics.json
+
+# ======================================
+# 🧪 TESTING
+# ======================================
+
+# Test artifacts
+coverage/
+.nyc_output/
+.coverage/
+*.lcov
+
+# Jest
+jest.config.js.map
+
+# Rust/Anchor build artifacts
+target/
+**/*.rs.bk
+.anchor/
+
+# Solana test ledger
+test-ledger/
+
+# Build outputs
+dist/
+build/
+.next/
+
+# Docker
+.docker/
+
+# Debug logs
+*.log
+
+# Local environment files
+.env*
+!.env.example 

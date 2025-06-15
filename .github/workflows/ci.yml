@@ -1,0 +1,109 @@
+name: CI/CD
+
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
+
+env:
+  CARGO_TERM_COLOR: always
+  SOLANA_VERSION: "1.14.29"
+  ANCHOR_VERSION: "0.28.0"
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+
+      - name: Install Node.js
+        uses: actions/setup-node@v3
+        with:
+          node-version: '18'
+          cache: 'npm'
+
+      - name: Install Rust
+        uses: actions-rs/toolchain@v1
+        with:
+          toolchain: stable
+          override: true
+
+      - name: Install Solana
+        run: |
+          sh -c "$(curl -sSfL https://release.solana.com/v${{ env.SOLANA_VERSION }}/install)"
+          echo "$HOME/.local/share/solana/install/active_release/bin" >> $GITHUB_PATH
+          solana-keygen new --no-bip39-passphrase
+
+      - name: Install Anchor
+        run: |
+          cargo install --git https://github.com/coral-xyz/anchor avm --locked --force
+          avm install ${{ env.ANCHOR_VERSION }}
+          avm use ${{ env.ANCHOR_VERSION }}
+
+      - name: Build and test contracts
+        run: |
+          cd contracts
+          anchor build
+          anchor test
+
+      - name: Build and test relayer
+        run: |
+          cd relayer
+          npm install
+          npm run build
+          npm test
+
+      - name: Build and test frontend
+        run: |
+          cd frontend
+          npm install
+          npm run build
+          npm test
+
+      - name: Build and test zk-prover
+        run: |
+          cd zk-coprocessor
+          cargo test --release
+
+  deploy-devnet:
+    needs: test
+    if: github.ref == 'refs/heads/main'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+
+      - name: Install Node.js
+        uses: actions/setup-node@v3
+        with:
+          node-version: '18'
+
+      - name: Install Solana
+        run: |
+          sh -c "$(curl -sSfL https://release.solana.com/v${{ env.SOLANA_VERSION }}/install)"
+          echo "$HOME/.local/share/solana/install/active_release/bin" >> $GITHUB_PATH
+
+      - name: Install Anchor
+        run: |
+          cargo install --git https://github.com/coral-xyz/anchor avm --locked --force
+          avm install ${{ env.ANCHOR_VERSION }}
+          avm use ${{ env.ANCHOR_VERSION }}
+
+      - name: Deploy to devnet
+        env:
+          ANCHOR_WALLET: ${{ secrets.DEPLOY_KEYPAIR }}
+        run: |
+          echo "$ANCHOR_WALLET" > deploy-keypair.json
+          solana config set --url devnet
+          solana config set --keypair deploy-keypair.json
+          cd contracts
+          anchor deploy
+
+      - name: Build and push Docker images
+        env:
+          DOCKER_USERNAME: ${{ secrets.DOCKER_USERNAME }}
+          DOCKER_PASSWORD: ${{ secrets.DOCKER_PASSWORD }}
+        run: |
+          echo "$DOCKER_PASSWORD" | docker login -u "$DOCKER_USERNAME" --password-stdin
+          docker-compose build
+          docker-compose push 
