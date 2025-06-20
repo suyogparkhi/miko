@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -36,7 +35,7 @@ export const DepositForm = ({ onComplete }: DepositFormProps) => {
   };
 
   return (
-    <div className="space-y-8">
+    <div className="space-y-8 max-w-xl mx-auto w-full bg-gray-900/80 border border-gray-800/60 rounded-2xl p-4 sm:p-8 shadow-lg transition-all">
       <div className="text-center">
         <h2 className="text-3xl font-bold text-white mb-2">Deposit to Vault</h2>
         <p className="text-gray-400">Select a token and amount to deposit securely</p>
@@ -52,13 +51,13 @@ export const DepositForm = ({ onComplete }: DepositFormProps) => {
             {tokens.map((token) => (
               <button
                 key={token.symbol}
+                aria-label={`Select ${token.symbol}`}
                 onClick={() => setSelectedToken(token.symbol)}
                 className={`
-                  group relative overflow-hidden p-6 rounded-xl border-2 transition-all duration-300 transform hover:scale-105
+                  group relative overflow-hidden p-6 rounded-xl border-2 transition-all duration-300 transform hover:scale-105 focus-visible:ring-2 focus-visible:ring-blue-500
                   ${selectedToken === token.symbol 
                     ? 'border-blue-500 bg-gradient-to-br from-blue-500/20 to-purple-500/20 shadow-lg shadow-blue-500/25' 
-                    : 'border-gray-600 bg-gray-800/50 hover:border-gray-500 hover:bg-gray-700/50'
-                  }
+                    : 'border-gray-600 bg-gray-800/50 hover:border-gray-500 hover:bg-gray-700/50'}
                 `}
               >
                 <div className="flex items-center space-x-4">
@@ -66,8 +65,7 @@ export const DepositForm = ({ onComplete }: DepositFormProps) => {
                     w-12 h-12 rounded-full flex items-center justify-center text-2xl
                     ${selectedToken === token.symbol 
                       ? `bg-gradient-to-r ${token.color}` 
-                      : 'bg-gray-700'
-                    }
+                      : 'bg-gray-700'}
                   `}>
                     {token.icon}
                   </div>
@@ -102,11 +100,14 @@ export const DepositForm = ({ onComplete }: DepositFormProps) => {
                 placeholder="0.00"
                 value={amount}
                 onChange={(e) => setAmount(e.target.value)}
-                className="bg-gray-800/90 border-gray-600 text-white text-xl placeholder-gray-400 pr-20 py-6 rounded-xl focus:border-blue-500 transition-all duration-300"
+                className="bg-gray-800/90 border-gray-600 text-white text-xl placeholder-gray-400 pr-20 py-6 rounded-xl focus:border-blue-500 focus-visible:ring-2 focus-visible:ring-blue-500 transition-all duration-300"
+                aria-label="Amount to deposit"
               />
               <button
+                type="button"
                 onClick={handleMaxClick}
-                className="absolute right-4 top-1/2 transform -translate-y-1/2 bg-gradient-to-r from-blue-500 to-purple-600 text-white text-sm font-medium px-3 py-1.5 rounded-lg hover:shadow-lg transition-all duration-200"
+                className="absolute right-4 top-1/2 transform -translate-y-1/2 bg-gradient-to-r from-blue-500 to-purple-600 text-white text-sm font-medium px-3 py-1.5 rounded-lg hover:shadow-lg focus-visible:ring-2 focus-visible:ring-blue-500 transition-all duration-200"
+                aria-label="Max amount"
               >
                 MAX
               </button>
@@ -123,7 +124,8 @@ export const DepositForm = ({ onComplete }: DepositFormProps) => {
         <Button
           onClick={handleDeposit}
           disabled={!amount || parseFloat(amount) <= 0 || isLoading}
-          className="w-full bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white font-medium py-4 text-lg rounded-xl transition-all duration-300 transform hover:scale-105 disabled:transform-none disabled:opacity-50"
+          className="w-full bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white font-medium py-4 text-lg rounded-xl transition-all duration-300 transform hover:scale-105 focus-visible:ring-2 focus-visible:ring-blue-500 disabled:transform-none disabled:opacity-50"
+          aria-label="Deposit"
         >
           {isLoading ? (
             <div className="flex items-center space-x-3">
@@ -139,7 +141,7 @@ export const DepositForm = ({ onComplete }: DepositFormProps) => {
         </Button>
 
         {/* Transaction Info */}
-        <div className="bg-gradient-to-r from-gray-800/50 to-gray-700/50 rounded-xl p-6 border border-gray-700/50">
+        <div className="bg-gradient-to-r from-gray-800/50 to-gray-700/50 rounded-xl p-6 border border-gray-700/50 mt-2">
           <div className="space-y-3 text-sm">
             <div className="flex justify-between items-center">
               <span className="text-gray-400">Network Fee</span>

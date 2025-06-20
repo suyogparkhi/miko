@@ -1,16 +1,21 @@
-
-import { useState } from "react";
+import { useContext, useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Wallet, ChevronDown } from "lucide-react";
+import { WalletContext } from "@/contexts/WalletContext";
 
 interface WalletConnectProps {
-  isConnected: boolean;
-  onConnectionChange: (connected: boolean) => void;
+  isConnected?: boolean;
+  onConnectionChange?: (connected: boolean) => void;
 }
 
 export const WalletConnect = ({ isConnected, onConnectionChange }: WalletConnectProps) => {
+  const context = useContext(WalletContext);
   const [isLoading, setIsLoading] = useState(false);
   const [showWalletOptions, setShowWalletOptions] = useState(false);
+
+  // Prefer context if available
+  const connected = context ? context.isConnected : isConnected;
+  const setConnected = context ? context.setIsConnected : onConnectionChange;
 
   const walletOptions = [
     { name: "Phantom", icon: "👻" },
@@ -22,19 +27,17 @@ export const WalletConnect = ({ isConnected, onConnectionChange }: WalletConnect
   const handleConnect = async (walletName: string) => {
     setIsLoading(true);
     setShowWalletOptions(false);
-    
-    // Simulate wallet connection
     setTimeout(() => {
-      onConnectionChange(true);
+      setConnected && setConnected(true);
       setIsLoading(false);
     }, 1500);
   };
 
   const handleDisconnect = () => {
-    onConnectionChange(false);
+    setConnected && setConnected(false);
   };
 
-  if (isConnected) {
+  if (connected) {
     return (
       <div className="flex items-center space-x-3">
         <div className="flex items-center space-x-2 bg-gray-800/50 border border-gray-700/50 rounded-lg px-3 py-2">
@@ -73,8 +76,6 @@ export const WalletConnect = ({ isConnected, onConnectionChange }: WalletConnect
           </div>
         )}
       </Button>
-
-      {/* Wallet Options Dropdown */}
       {showWalletOptions && !isLoading && (
         <div className="absolute right-0 top-full mt-2 w-48 bg-gray-800 border border-gray-700/50 rounded-lg shadow-xl z-10">
           {walletOptions.map((wallet) => (

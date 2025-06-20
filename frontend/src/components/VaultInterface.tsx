@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import { DepositForm } from "./DepositForm";
 import { SwapForm } from "./SwapForm";
@@ -30,9 +29,9 @@ export const VaultInterface = () => {
   ];
 
   return (
-    <div className="max-w-6xl mx-auto">
+    <div className="w-full max-w-6xl mx-auto px-2 sm:px-4">
       {/* Navigation Tabs */}
-      <div className="flex items-center justify-center mb-8 space-x-2 bg-gray-800/30 p-2 rounded-2xl backdrop-blur-sm">
+      <nav className="flex flex-wrap items-center justify-center mb-8 gap-2 bg-gray-800/30 p-2 rounded-2xl backdrop-blur-sm transition-all duration-300" aria-label="Vault navigation">
         {navigationTabs.map((tab) => {
           const isActive = tab.id === currentStep;
           const isAccessible = 
@@ -41,16 +40,17 @@ export const VaultInterface = () => {
             (tab.id === "status" && swapIntent) ||
             (tab.id === "withdraw" && proofReady) ||
             tab.id === "history";
-          
           return (
             <button
               key={tab.id}
+              aria-current={isActive ? "page" : undefined}
+              aria-disabled={!isAccessible}
               onClick={() => isAccessible && setCurrentStep(tab.id as VaultStep)}
               disabled={!isAccessible}
               className={`
-                flex items-center space-x-2 px-4 py-3 rounded-xl transition-all duration-200 font-medium
+                flex items-center space-x-2 px-4 py-3 rounded-xl font-medium focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 transition-all duration-200
                 ${isActive 
-                  ? 'bg-gradient-to-r from-blue-600 to-purple-600 text-white shadow-lg' 
+                  ? 'bg-gradient-to-r from-blue-600 to-purple-600 text-white shadow-lg scale-105' 
                   : isAccessible
                     ? 'text-gray-300 hover:text-white hover:bg-gray-700/50' 
                     : 'text-gray-600 cursor-not-allowed'
@@ -62,29 +62,28 @@ export const VaultInterface = () => {
             </button>
           );
         })}
-      </div>
+      </nav>
 
       {/* Step Progress Indicator (only for main flow) */}
       {currentStep !== "history" && (
-        <div className="flex items-center justify-center mb-8 space-x-4">
+        <div className="flex flex-wrap items-center justify-center mb-8 gap-2 sm:gap-4 transition-all duration-300">
           {steps.map((step, index) => {
             const isActive = step.id === currentStep;
             const isCompleted = 
               (step.id === "deposit" && depositComplete) ||
               (step.id === "swap" && swapIntent) ||
               (step.id === "status" && proofReady);
-            
             return (
-              <div key={step.id} className="flex items-center space-x-4">
+              <div key={step.id} className="flex items-center gap-2 sm:gap-4">
                 <div className={`
-                  flex items-center space-x-2 px-4 py-2 rounded-lg transition-all duration-200
-                  ${isActive ? 'bg-blue-600 text-white' : isCompleted ? 'bg-green-600 text-white' : 'bg-gray-700 text-gray-400'}
+                  flex items-center space-x-2 px-4 py-2 rounded-lg font-medium transition-all duration-200
+                  ${isActive ? 'bg-blue-600 text-white scale-105' : isCompleted ? 'bg-green-600 text-white' : 'bg-gray-700 text-gray-400'}
                 `}>
                   <span className="text-lg">{step.icon}</span>
-                  <span className="font-medium">{step.label}</span>
+                  <span>{step.label}</span>
                 </div>
                 {index < steps.length - 1 && (
-                  <div className="w-8 h-0.5 bg-gray-600"></div>
+                  <div className="w-6 h-0.5 bg-gray-600"></div>
                 )}
               </div>
             );
@@ -93,9 +92,9 @@ export const VaultInterface = () => {
       )}
 
       {/* Main Interface */}
-      <div className="grid lg:grid-cols-3 gap-8">
+      <div className="flex flex-col lg:flex-row gap-8 transition-all duration-300">
         {/* Left Column - Current Action */}
-        <div className="lg:col-span-2 bg-gray-800/50 backdrop-blur-sm border border-gray-700/50 rounded-2xl p-6">
+        <section className="w-full lg:w-2/3 bg-gray-800/50 backdrop-blur-sm border border-gray-700/50 rounded-2xl p-4 sm:p-6 mb-4 lg:mb-0 transition-all duration-300 shadow-md">
           {currentStep === "deposit" && (
             <DepositForm 
               onComplete={() => {
@@ -122,13 +121,13 @@ export const VaultInterface = () => {
           )}
           {currentStep === "withdraw" && <WithdrawForm />}
           {currentStep === "history" && <SwapHistory />}
-        </div>
+        </section>
 
         {/* Right Column - Account Overview */}
         {currentStep !== "history" && (
-          <div className="space-y-6">
+          <aside className="w-full lg:w-1/3 flex flex-col gap-6 sticky top-24 self-start transition-all duration-300">
             {/* Balance Card */}
-            <div className="bg-gray-800/50 backdrop-blur-sm border border-gray-700/50 rounded-2xl p-6">
+            <div className="bg-gray-800/50 backdrop-blur-sm border border-gray-700/50 rounded-2xl p-6 shadow-md">
               <h3 className="text-lg font-semibold text-white mb-4">Vault Balance</h3>
               <div className="space-y-3">
                 <div className="flex justify-between items-center">
@@ -149,7 +148,7 @@ export const VaultInterface = () => {
             </div>
 
             {/* Privacy Info */}
-            <div className="bg-gradient-to-r from-blue-900/20 to-purple-900/20 border border-blue-700/30 rounded-2xl p-6">
+            <div className="bg-gradient-to-r from-blue-900/20 to-purple-900/20 border border-blue-700/30 rounded-2xl p-6 shadow-md">
               <h3 className="text-lg font-semibold text-white mb-2">Privacy Protection</h3>
               <p className="text-sm text-gray-300 mb-4">
                 Your swap intents are encrypted and processed off-chain. Only the final proof is submitted to Solana.
@@ -161,7 +160,7 @@ export const VaultInterface = () => {
             </div>
 
             {/* Quick Stats */}
-            <div className="bg-gray-800/50 backdrop-blur-sm border border-gray-700/50 rounded-2xl p-6">
+            <div className="bg-gray-800/50 backdrop-blur-sm border border-gray-700/50 rounded-2xl p-6 shadow-md">
               <h3 className="text-lg font-semibold text-white mb-4">Quick Stats</h3>
               <div className="space-y-3">
                 <div className="flex justify-between items-center">
@@ -178,7 +177,7 @@ export const VaultInterface = () => {
                 </div>
               </div>
             </div>
-          </div>
+          </aside>
         )}
       </div>
     </div>
