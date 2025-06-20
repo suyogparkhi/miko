@@ -92,39 +92,43 @@ export const VaultInterface = () => {
       )}
 
       {/* Main Interface */}
-      <div className="flex flex-col lg:flex-row gap-8 transition-all duration-300">
-        {/* Left Column - Current Action */}
-        <section className="w-full lg:w-2/3 bg-gray-800/50 backdrop-blur-sm border border-gray-700/50 rounded-2xl p-4 sm:p-6 mb-4 lg:mb-0 transition-all duration-300 shadow-md">
-          {currentStep === "deposit" && (
-            <DepositForm 
-              onComplete={() => {
-                setDepositComplete(true);
-                setCurrentStep("swap");
-              }} 
-            />
-          )}
-          {currentStep === "swap" && (
-            <SwapForm 
-              onComplete={() => {
-                setSwapIntent(true);
-                setCurrentStep("status");
-              }} 
-            />
-          )}
-          {currentStep === "status" && (
-            <SwapStatus 
-              onProofReady={() => {
-                setProofReady(true);
-                setCurrentStep("withdraw");
-              }} 
-            />
-          )}
-          {currentStep === "withdraw" && <WithdrawForm />}
-          {currentStep === "history" && <SwapHistory />}
-        </section>
-
-        {/* Right Column - Account Overview */}
-        {currentStep !== "history" && (
+      {currentStep === "history" ? (
+        <div className="flex flex-col items-center justify-center min-h-[60vh] w-full">
+          <div className="w-full flex justify-center">
+            <SwapHistory />
+          </div>
+        </div>
+      ) : (
+        <div className="flex flex-col lg:flex-row gap-8 transition-all duration-300 min-h-[60vh]">
+          {/* Left Column - Current Action */}
+          <section className="w-full lg:w-2/3 bg-gray-800/50 backdrop-blur-sm border border-gray-700/50 rounded-2xl p-4 sm:p-6 mb-4 lg:mb-0 transition-all duration-300 shadow-md flex flex-col justify-center">
+            {currentStep === "deposit" && (
+              <DepositForm 
+                onComplete={() => {
+                  setDepositComplete(true);
+                  setCurrentStep("swap");
+                }} 
+              />
+            )}
+            {currentStep === "swap" && (
+              <SwapForm 
+                onComplete={() => {
+                  setSwapIntent(true);
+                  setCurrentStep("status");
+                }} 
+              />
+            )}
+            {currentStep === "status" && (
+              <SwapStatus 
+                onProofReady={() => {
+                  setProofReady(true);
+                  setCurrentStep("withdraw");
+                }} 
+              />
+            )}
+            {currentStep === "withdraw" && <WithdrawForm />}
+          </section>
+          {/* Right Column - Account Overview */}
           <aside className="w-full lg:w-1/3 flex flex-col gap-6 sticky top-24 self-start transition-all duration-300">
             {/* Balance Card */}
             <div className="bg-gray-800/50 backdrop-blur-sm border border-gray-700/50 rounded-2xl p-6 shadow-md">
@@ -146,7 +150,6 @@ export const VaultInterface = () => {
                 </div>
               </div>
             </div>
-
             {/* Privacy Info */}
             <div className="bg-gradient-to-r from-blue-900/20 to-purple-900/20 border border-blue-700/30 rounded-2xl p-6 shadow-md">
               <h3 className="text-lg font-semibold text-white mb-2">Privacy Protection</h3>
@@ -158,7 +161,6 @@ export const VaultInterface = () => {
                 <span>Zero-knowledge proofs active</span>
               </div>
             </div>
-
             {/* Quick Stats */}
             <div className="bg-gray-800/50 backdrop-blur-sm border border-gray-700/50 rounded-2xl p-6 shadow-md">
               <h3 className="text-lg font-semibold text-white mb-4">Quick Stats</h3>
@@ -178,8 +180,8 @@ export const VaultInterface = () => {
               </div>
             </div>
           </aside>
-        )}
-      </div>
+        </div>
+      )}
     </div>
   );
 };
