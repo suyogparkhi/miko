@@ -4,7 +4,7 @@ import path from 'path';
 import crypto from 'crypto';
 
 const secretsDir = path.resolve('secrets');
-const ENCRYPTION_KEY = "3f8710b1c684141c860fe8bcf86fbb2994f7554e85235955eb8f58d940f3107"
+const ENCRYPTION_KEY = process.env.ENCRYPTION_KEY || crypto.randomBytes(32).toString('hex');
 
 // In-memory storage for temporary wallets (better than file system for security)
 const walletStore = new Map();
@@ -118,7 +118,7 @@ function encrypt(text) {
   const algorithm = 'aes-256-cbc';
   const key = Buffer.from(ENCRYPTION_KEY, 'hex');
   const iv = crypto.randomBytes(16);
-  const cipher = crypto.createCipheriv(algorithm, key, iv);
+  const cipher = crypto.createCipher(algorithm, key);
   let encrypted = cipher.update(text, 'utf8', 'hex');
   encrypted += cipher.final('hex');
   return iv.toString('hex') + ':' + encrypted;
@@ -129,12 +129,11 @@ function decrypt(encryptedData) {
   const key = Buffer.from(ENCRYPTION_KEY, 'hex');
   const [ivHex, encrypted] = encryptedData.split(':');
   const iv = Buffer.from(ivHex, 'hex');
-  const decipher = crypto.createDecipheriv(algorithm, key, iv);
+  const decipher = crypto.createDecipher(algorithm, key);
   let decrypted = decipher.update(encrypted, 'hex', 'utf8');
   decrypted += decipher.final('utf8');
   return decrypted;
 }
-
 
 // Initialize cleanup on module load
 cleanupOldWallets(); 
