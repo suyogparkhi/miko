@@ -62,7 +62,6 @@ export async function getSwapTransaction(quoteResponse, userPublicKey) {
       useSharedAccounts: true,
       feeAccount: undefined,
       trackingAccount: undefined,
-      computeUnitPriceMicroLamports: 'auto',
       prioritizationFeeLamports: 'auto'
     });
 

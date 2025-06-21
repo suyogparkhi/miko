@@ -142,7 +142,7 @@ router.post('/', async (req, res, next) => {
   try {
     console.log('Confirmation request received:', {
       ...req.body,
-      quoteResponse: req.body.quoteResponse ? '[QUOTE_DATA]' : undefined
+      quoteResponse: req.body.quoteResponse ? req.body.quoteResponse : undefined
     });
     
     // Validate input
