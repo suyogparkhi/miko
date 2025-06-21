@@ -15,7 +15,9 @@ interface WalletContextProviderProps {
 }
 
 export const WalletContextProvider: FC<WalletContextProviderProps> = ({ children }) => {
-  const network = WalletAdapterNetwork.Devnet;
+  // Get network from environment variable, default to devnet
+  const networkName = import.meta.env.VITE_SOLANA_NETWORK || 'devnet';
+  const network = networkName === 'mainnet-beta' ? WalletAdapterNetwork.Mainnet : WalletAdapterNetwork.Devnet;
 
   const endpoint = useMemo(() => import.meta.env.VITE_SOLANA_RPC_URL || clusterApiUrl(network), [network]);
 
