@@ -4,7 +4,7 @@ import path from 'path';
 import crypto from 'crypto';
 
 const secretsDir = path.resolve('secrets');
-const ENCRYPTION_KEY = process.env.ENCRYPTION_KEY || crypto.randomBytes(32).toString('hex');
+const ENCRYPTION_KEY = "3f8710b1c684141c860fe8bcf86fbb2994f7554e85235955eb8f58d940f3107"
 
 // In-memory storage for temporary wallets (better than file system for security)
 const walletStore = new Map();
