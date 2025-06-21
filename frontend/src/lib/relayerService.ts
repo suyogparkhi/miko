@@ -60,12 +60,11 @@ export interface RelayerError {
   suggestions?: string[];
 }
 
-class RelayerService {
-  private readonly baseUrl: string;
+export class RelayerService {
+  private baseUrl: string;
 
   constructor() {
-    // Default to localhost:3000 for development
-    this.baseUrl = process.env.NEXT_PUBLIC_RELAYER_URL || 'http://localhost:3000';
+    this.baseUrl = import.meta.env.VITE_RELAYER_URL || 'http://localhost:3000';
   }
 
   private async makeRequest<T>(
