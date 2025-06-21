@@ -4,6 +4,8 @@ import { SwapForm } from "./SwapForm";
 import { SwapStatus } from "./SwapStatus";
 import { WithdrawForm } from "./WithdrawForm";
 import { SwapHistory } from "./SwapHistory";
+import { useVault } from "@/contexts/VaultContext";
+import { Button } from "@/components/ui/button";
 
 type VaultStep = "deposit" | "swap" | "status" | "withdraw" | "history";
 
@@ -12,13 +14,56 @@ export const VaultInterface = () => {
   const [depositComplete, setDepositComplete] = useState(false);
   const [swapIntent, setSwapIntent] = useState(false);
   const [proofReady, setProofReady] = useState(false);
+  
+  const { 
+    vaultBalance, 
+    isVaultCreated, 
+    isLoading, 
+    error, 
+    createUserVault, 
+    refreshBalance 
+  } = useVault();
 
   const steps = [
-    { id: "deposit", label: "Deposit", icon: "💰" },
-    { id: "swap", label: "Swap Intent", icon: "🔄" },
-    // { id: "status", label: "zk-Proof", icon: "🔐" },
+    { id: "deposit", label: "Deposit", icon: "💰"},
+    { id: "swap", label: "Swap Intent", icon: "🔄"},
     { id: "withdraw", label: "Withdraw", icon: "📤" },
   ];
+
+  const canNavigateToStep = (stepId: string) => {
+    switch (stepId) {
+      case "deposit":
+        return true;
+      case "swap":
+        return depositComplete || isVaultCreated;
+      case "withdraw":
+        return isVaultCreated && vaultBalance > 0;
+      default:
+        return false;
+    }
+  };
+
+  const handleStepClick = (stepId: VaultStep) => {
+    if (canNavigateToStep(stepId)) {
+      setCurrentStep(stepId);
+    }
+  };
+
+  const getPreviousStep = (): VaultStep | null => {
+    const currentIndex = steps.findIndex(step => step.id === currentStep);
+    if (currentIndex > 0) {
+      return steps[currentIndex - 1].id as VaultStep;
+    }
+    return null;
+  };
+
+  const getNextStep = (): VaultStep | null => {
+    const currentIndex = steps.findIndex(step => step.id === currentStep);
+    if (currentIndex < steps.length - 1) {
+      return steps[currentIndex + 1].id as VaultStep;
+    }
+    return null;
+  };
 
 
   return (
@@ -34,18 +79,41 @@ export const VaultInterface = () => {
             const isCompleted = 
               (step.id === "deposit" && depositComplete) ||
               (step.id === "swap" && swapIntent) ||
-              (step.id === "status" && proofReady);
+              (step.id === "withdraw" && proofReady);
+            const canNavigate = canNavigateToStep(step.id);
+            
             return (
               <div key={step.id} className="flex items-center gap-2 sm:gap-4">
-                <div className={`
-                  flex items-center space-x-2 px-4 py-2 rounded-lg font-medium transition-all duration-200
-                  ${isActive ? 'bg-blue-600 text-white scale-105' : isCompleted ? 'bg-green-600 text-white' : 'bg-gray-700 text-gray-400'}
-                `}>
-                  <span className="text-lg">{step.icon}</span>
-                  <span>{step.label}</span>
-                </div>
+                <button
+                  onClick={() => handleStepClick(step.id as VaultStep)}
+                  disabled={!canNavigate}
+                  className={`
+                    group relative flex flex-col items-center space-y-2 px-4 py-3 rounded-xl font-medium transition-all duration-200 transform hover:scale-105 focus:outline-none focus:ring-2 focus:ring-blue-500 disabled:transform-none disabled:cursor-not-allowed
+                    ${isActive 
+                      ? 'bg-gradient-to-r from-blue-600 to-purple-600 text-white shadow-lg shadow-blue-500/25' 
+                      : isCompleted 
+                        ? 'bg-gradient-to-r from-green-600 to-emerald-600 text-white shadow-lg shadow-green-500/25' 
+                        : canNavigate
+                          ? 'bg-gray-700 text-gray-300 hover:bg-gray-600 hover:text-white'
+                          : 'bg-gray-800 text-gray-500 opacity-50'
+                    }
+                  `}
+                >
+                  <div className="flex items-center space-x-2">
+                    <span className="text-lg">{step.icon}</span>
+                    <span className="text-sm sm:text-base">{step.label}</span>
+                  </div>
+                  
+                  {isCompleted && (
+                    <div className="absolute -top-1 -right-1 w-4 h-4 bg-green-500 rounded-full flex items-center justify-center">
+                      <span className="text-xs text-white">✓</span>
+                    </div>
+                  )}
+                </button>
                 {index < steps.length - 1 && (
-                  <div className="w-6 h-0.5 bg-gray-600"></div>
+                  <div className={`w-8 h-0.5 transition-colors duration-300 ${
+                    isCompleted ? 'bg-green-500' : 'bg-gray-600'
+                  }`}></div>
                 )}
               </div>
             );
@@ -94,23 +162,50 @@ export const VaultInterface = () => {
           <aside className="w-full lg:w-1/3 flex flex-col gap-6 sticky top-24 self-start transition-all duration-300">
             {/* Balance Card */}
             <div className="bg-gray-800/50 backdrop-blur-sm border border-gray-700/50 rounded-2xl p-6 shadow-md">
-              <h3 className="text-lg font-semibold text-white mb-4">Vault Balance</h3>
-              <div className="space-y-3">
-                <div className="flex justify-between items-center">
-                  <span className="text-gray-400">USDC</span>
-                  <span className="text-white font-medium">1,250.00</span>
+              <div className="flex justify-between items-center mb-4">
+                <h3 className="text-lg font-semibold text-white">Vault Balance</h3>
+                <Button
+                  onClick={refreshBalance}
+                  disabled={isLoading}
+                  variant="ghost"
+                  size="sm"
+                  className="text-blue-400 hover:text-blue-300"
+                >
+                  {isLoading ? "🔄" : "↻"}
+                </Button>
+              </div>
+              
+              {!isVaultCreated ? (
+                <div className="text-center py-4">
+                  <p className="text-gray-400 mb-4">No vault found</p>
+                  <Button
+                    onClick={createUserVault}
+                    disabled={isLoading}
+                    className="bg-blue-600 hover:bg-blue-700"
+                  >
+                    {isLoading ? "Creating..." : "Create Vault"}
+                  </Button>
                 </div>
-                <div className="flex justify-between items-center">
-                  <span className="text-gray-400">SOL</span>
-                  <span className="text-white font-medium">0.5</span>
-                </div>
-                <div className="border-t border-gray-700 pt-3 mt-3">
+              ) : (
+                <div className="space-y-3">
                   <div className="flex justify-between items-center">
-                    <span className="text-gray-400">Total Value</span>
-                    <span className="text-white font-semibold">$1,345.50</span>
+                    <span className="text-gray-400">SOL</span>
+                    <span className="text-white font-medium">{vaultBalance.toFixed(4)}</span>
+                  </div>
+                  <div className="border-t border-gray-700 pt-3 mt-3">
+                    <div className="flex justify-between items-center">
+                      <span className="text-gray-400">Total Value</span>
+                      <span className="text-white font-semibold">{vaultBalance.toFixed(4)} SOL</span>
+                    </div>
                   </div>
                 </div>
-              </div>
+              )}
+              
+              {error && (
+                <div className="mt-4 p-3 bg-red-900/20 border border-red-700/30 rounded-lg">
+                  <p className="text-red-400 text-sm">{error}</p>
+                </div>
+              )}
             </div>
             {/* Privacy Info */}
             <div className="bg-gradient-to-r from-blue-900/20 to-purple-900/20 border border-blue-700/30 rounded-2xl p-6 shadow-md">

@@ -10,20 +10,18 @@ export interface TokenInfo {
   coingeckoId?: string;
 }
 
-// Devnet token addresses
 export const DEVNET_TOKENS: TokenInfo[] = [
-  {
-    symbol: "USDC",
-    name: "USD Coin",
-    mint: "4zMMC9srt5Ri5X14GAgXhaHii3GnPAEERYPJgZJDncDU", // USDC devnet
-    decimals: 6,
-    icon: "💵",
-    color: "from-blue-500 to-blue-600",
-    coingeckoId: "usd-coin"
-  }
+//   {
+//     symbol: "USDC",
+//     name: "USD Coin",
+//     mint: "4zMMC9srt5Ri5X14GAgXhaHii3GnPAEERYPJgZJDncDU",
+//     decimals: 6,
+//     icon: "💵",
+//     color: "from-blue-500 to-blue-600",
+//     coingeckoId: "usd-coin"
+//   }
 ];
 
-// Mainnet token addresses (for reference)
 export const MAINNET_TOKENS: TokenInfo[] = [
   {
     symbol: "USDC",

@@ -6,6 +6,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { getTokens, formatTokenAmount, getTokenPrice, type TokenInfo } from "@/lib/tokens";
+import { useVault } from "@/contexts/VaultContext";
 
 interface DepositFormProps {
   onComplete: () => void;
@@ -25,6 +26,7 @@ export const DepositForm = ({ onComplete }: DepositFormProps) => {
 
   const { publicKey, connected } = useWallet();
   const { connection } = useConnection();
+  const { deposit, isVaultCreated, createUserVault } = useVault();
 
   const fetchTokenBalances = async () => {
     if (!publicKey || !connected) {
@@ -116,15 +118,24 @@ export const DepositForm = ({ onComplete }: DepositFormProps) => {
       return;
     }
 
+    // Only support SOL deposits for now
+    if (selectedToken !== 'SOL') {
+      console.error('Only SOL deposits are supported');
+      return;
+    }
+
     setIsLoading(true);
     
     try {
-      // Here you would implement the actual deposit logic
-      // For now, we'll simulate the transaction
-      console.log(`Depositing ${amount} ${selectedToken}`);
-      
-      // Simulate deposit transaction
-      await new Promise(resolve => setTimeout(resolve, 2000));
+      // Check if vault exists, create if not
+      if (!isVaultCreated) {
+        console.log('Creating vault first...');
+        await createUserVault();
+      }
+
+      // Deposit to vault
+      console.log(`Depositing ${amount} ${selectedToken} to vault`);
+      await deposit(parseFloat(amount));
       
       // Refresh balances after deposit
       await fetchTokenBalances();

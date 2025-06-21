@@ -1,18 +1,40 @@
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { useVault } from "@/contexts/VaultContext";
+import { useWallet } from '@solana/wallet-adapter-react';
+import { PublicKey } from '@solana/web3.js';
 
 export const WithdrawForm = () => {
   const [isLoading, setIsLoading] = useState(false);
   const [isComplete, setIsComplete] = useState(false);
+  const [amount, setAmount] = useState("");
+  const [recipientAddress, setRecipientAddress] = useState("");
+  
+  const { vaultBalance, withdraw } = useVault();
+  const { publicKey } = useWallet();
 
   const handleWithdraw = async () => {
+    if (!amount || !recipientAddress) {
+      console.error('Amount and recipient address are required');
+      return;
+    }
+
     setIsLoading(true);
     
-    // Simulate withdrawal transaction
-    setTimeout(() => {
-      setIsLoading(false);
+    try {
+      const recipient = recipientAddress === 'self' && publicKey 
+        ? publicKey 
+        : new PublicKey(recipientAddress);
+      
+      await withdraw(recipient, parseFloat(amount));
       setIsComplete(true);
-    }, 2000);
+    } catch (error) {
+      console.error('Withdrawal failed:', error);
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   if (isComplete) {
@@ -23,12 +45,12 @@ export const WithdrawForm = () => {
         </div>
         <h2 className="text-2xl font-bold text-white mb-2">Withdrawal Complete!</h2>
         <p className="text-gray-400 mb-6">
-          Your BONK tokens have been successfully withdrawn to your wallet.
+          Your SOL has been successfully withdrawn from the vault.
         </p>
         <div className="bg-gray-700/30 rounded-lg p-4 mb-6">
-          <div className="text-sm text-gray-400 mb-2">Transaction Hash</div>
-          <div className="text-white font-mono text-sm break-all">
-            3k2mN7vQ8xR...9pL5wX2yT
+          <div className="text-sm text-gray-400 mb-2">Amount Withdrawn</div>
+          <div className="text-white font-medium">
+            {amount} SOL
           </div>
         </div>
         <Button 
@@ -43,54 +65,78 @@ export const WithdrawForm = () => {
 
   return (
     <div>
-      <h2 className="text-2xl font-bold text-white mb-6">Withdraw Tokens</h2>
+      <h2 className="text-2xl font-bold text-white mb-6">Withdraw from Vault</h2>
       
       <div className="space-y-6">
-        {/* Success Notice */}
-        <div className="bg-green-900/20 border border-green-700/30 rounded-lg p-4">
-          <div className="flex items-center space-x-2 mb-2">
-            <span className="text-green-400">✅</span>
-            <span className="text-sm font-medium text-green-400">Proof Verified</span>
+        {/* Vault Balance Display */}
+        <div className="bg-gray-700/30 rounded-lg p-4">
+          <div className="flex justify-between items-center">
+            <span className="text-gray-400">Available Balance</span>
+            <span className="text-white font-medium">{vaultBalance.toFixed(4)} SOL</span>
           </div>
-          <p className="text-xs text-gray-300">
-            Zero-knowledge proof has been verified. Your swap is ready for withdrawal.
-          </p>
         </div>
 
-        {/* Withdrawal Details */}
-        <div className="bg-gray-700/30 rounded-lg p-6">
-          <h3 className="font-medium text-white mb-4">Withdrawal Summary</h3>
-          
-          <div className="flex items-center justify-between p-4 bg-gray-600/30 rounded-lg mb-4">
-            <div className="flex items-center space-x-3">
-              <span className="text-2xl">🐕</span>
-              <div>
-                <div className="font-medium text-white">BONK</div>
-                <div className="text-sm text-gray-400">Bonk Token</div>
-              </div>
-            </div>
-            <div className="text-right">
-              <div className="font-bold text-white text-lg">2,450,000</div>
-              <div className="text-sm text-gray-400">≈ $490.00</div>
-            </div>
+        {/* Amount Input */}
+        <div className="space-y-2">
+          <Label htmlFor="withdraw-amount" className="text-sm font-medium text-gray-300">
+            Amount to Withdraw
+          </Label>
+          <div className="relative">
+            <Input
+              id="withdraw-amount"
+              type="number"
+              placeholder="0.00"
+              value={amount}
+              onChange={(e) => setAmount(e.target.value)}
+              max={vaultBalance}
+              className="bg-gray-800/90 border-gray-600 text-white pr-20"
+            />
+            <button
+              type="button"
+              onClick={() => setAmount(vaultBalance.toString())}
+              className="absolute right-4 top-1/2 transform -translate-y-1/2 bg-blue-600 text-white text-sm px-3 py-1 rounded hover:bg-blue-700"
+            >
+              MAX
+            </button>
           </div>
+        </div>
 
-          <div className="space-y-2 text-sm">
-            <div className="flex justify-between">
-              <span className="text-gray-400">Network Fee</span>
-              <span className="text-white">~0.00015 SOL</span>
-            </div>
-            <div className="flex justify-between">
-              <span className="text-gray-400">Destination</span>
-              <span className="text-white font-mono">7x4k...9mPQ</span>
-            </div>
+        {/* Recipient Address */}
+        <div className="space-y-2">
+          <Label htmlFor="recipient" className="text-sm font-medium text-gray-300">
+            Recipient Address
+          </Label>
+          <div className="space-y-2">
+            <button
+              type="button"
+              onClick={() => setRecipientAddress('self')}
+              className={`w-full p-3 rounded-lg border text-left transition-colors ${
+                recipientAddress === 'self' 
+                  ? 'border-blue-500 bg-blue-500/10 text-blue-400' 
+                  : 'border-gray-600 bg-gray-800/50 text-gray-300 hover:border-gray-500'
+              }`}
+            >
+              <div className="font-medium">Withdraw to My Wallet</div>
+              <div className="text-sm text-gray-400">
+                {publicKey?.toBase58().slice(0, 8)}...{publicKey?.toBase58().slice(-8)}
+              </div>
+            </button>
+            <div className="text-center text-gray-500 text-sm">or</div>
+            <Input
+              id="recipient"
+              type="text"
+              placeholder="Enter recipient address"
+              value={recipientAddress === 'self' ? '' : recipientAddress}
+              onChange={(e) => setRecipientAddress(e.target.value)}
+              className="bg-gray-800/90 border-gray-600 text-white"
+            />
           </div>
         </div>
 
         {/* Withdraw Button */}
         <Button
           onClick={handleWithdraw}
-          disabled={isLoading}
+          disabled={isLoading || !amount || !recipientAddress || parseFloat(amount) > vaultBalance}
           className="w-full bg-gradient-to-r from-green-600 to-emerald-600 hover:from-green-700 hover:to-emerald-700 text-white font-medium py-3 rounded-lg transition-all duration-200"
         >
           {isLoading ? (
@@ -99,14 +145,13 @@ export const WithdrawForm = () => {
               <span>Processing Withdrawal...</span>
             </div>
           ) : (
-            "Withdraw 2,450,000 BONK"
+            `Withdraw ${amount || '0'} SOL`
           )}
         </Button>
 
-        {/* Privacy Confirmation */}
+        {/* Info */}
         <div className="text-center text-xs text-gray-500">
-          <p>✅ Your trading activity remains completely private</p>
-          <p>✅ No on-chain trace of swap intent or intermediary steps</p>
+          <p>Network fees will be deducted from your wallet balance</p>
         </div>
       </div>
     </div>
