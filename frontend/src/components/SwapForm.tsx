@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -26,6 +25,8 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { Slider } from "@/components/ui/slider";
+import { TokenSelector } from "@/components/TokenSelector";
+import { Token } from "@/lib/tokenService";
 
 interface SwapFormProps {
   onComplete: () => void;
@@ -33,64 +34,14 @@ interface SwapFormProps {
 
 export const SwapForm = ({ onComplete }: SwapFormProps) => {
   const [fromToken] = useState("USDC");
-  const [toToken, setToToken] = useState("BONK");
+  const [toToken, setToToken] = useState<Token | null>(null);
   const [amount, setAmount] = useState("");
   const [slippage, setSlippage] = useState([0.5]);
   const [isLoading, setIsLoading] = useState(false);
-  const [open, setOpen] = useState(false);
   const [settingsOpen, setSettingsOpen] = useState(false);
 
-  const outputTokens = [
-    { 
-      symbol: "BONK", 
-      name: "Bonk", 
-      icon: "🐕", 
-      price: "0.000021", 
-      change: "+12.5%", 
-      positive: true,
-      ca: "DezXAZ8z7PnrnRJjz3wXBoRgixCa6xjnB7YaB1pPB263"
-    },
-    { 
-      symbol: "WIF", 
-      name: "dogwifhat", 
-      icon: "🐶", 
-      price: "2.45", 
-      change: "-3.2%", 
-      positive: false,
-      ca: "EKpQGSJtjMFqKZ9KQanSqYXRcF8fBopzLHYxdM65zcjm"
-    },
-    { 
-      symbol: "JUP", 
-      name: "Jupiter", 
-      icon: "🪐", 
-      price: "0.89", 
-      change: "+7.8%", 
-      positive: true,
-      ca: "JUPyiwrYJFskUPiHa7hkeR8VUtAeFoSYbKedZNsDvCN"
-    },
-    { 
-      symbol: "RAY", 
-      name: "Raydium", 
-      icon: "⚡", 
-      price: "4.12", 
-      change: "+2.1%", 
-      positive: true,
-      ca: "4k3Dyjzvzp8eMZWUXbBCjEvwSkkk59S5iCNLY3QrkX6R"
-    },
-    { 
-      symbol: "ORCA", 
-      name: "Orca", 
-      icon: "🐋", 
-      price: "3.67", 
-      change: "-1.5%", 
-      positive: false,
-      ca: "orcaEKTdK7LKz57vaAYr9QeNsVEPfiu6QeMU1kektZE"
-    },
-  ];
-
-  const selectedOutputToken = outputTokens.find(token => token.symbol === toToken);
-  const estimatedOutput = amount && selectedOutputToken 
-    ? (parseFloat(amount) / parseFloat(selectedOutputToken.price)).toLocaleString()
+  const estimatedOutput = amount && toToken?.price
+    ? (parseFloat(amount) / parseFloat(toToken.price)).toLocaleString()
     : "0";
 
   const handleSubmitIntent = async () => {
@@ -99,6 +50,10 @@ export const SwapForm = ({ onComplete }: SwapFormProps) => {
       setIsLoading(false);
       onComplete();
     }, 1500);
+  };
+
+  const handleTokenSelect = (token: Token) => {
+    setToToken(token);
   };
 
   return (
@@ -201,90 +156,24 @@ export const SwapForm = ({ onComplete }: SwapFormProps) => {
         {/* To Token Selection */}
         <div className="space-y-3">
           <Label className="text-sm font-medium text-gray-300">To</Label>
-          <Popover open={open} onOpenChange={setOpen}>
-            <PopoverTrigger asChild>
-              <Button
-                variant="outline"
-                role="combobox"
-                aria-expanded={open}
-                className="w-full justify-between bg-gray-800/80 border-gray-600 text-white hover:bg-gray-700/80 h-auto p-4"
-              >
-                {selectedOutputToken ? (
-                  <div className="flex items-center space-x-3">
-                    <div className="w-10 h-10 bg-gradient-to-r from-purple-500 to-pink-500 rounded-full flex items-center justify-center">
-                      {selectedOutputToken.icon}
-                    </div>
-                    <div className="text-left">
-                      <div className="font-medium">{selectedOutputToken.symbol}</div>
-                      <div className="text-sm text-gray-400">{selectedOutputToken.name}</div>
-                    </div>
-                    <div className="ml-auto text-right">
-                      <div className="text-sm">${selectedOutputToken.price}</div>
-                      <div className={`text-xs flex items-center ${selectedOutputToken.positive ? 'text-green-400' : 'text-red-400'}`}>
-                        {selectedOutputToken.positive ? <TrendingUp className="w-3 h-3 mr-1" /> : <TrendingDown className="w-3 h-3 mr-1" />}
-                        {selectedOutputToken.change}
-                      </div>
-                    </div>
-                  </div>
-                ) : (
-                  "Select token..."
-                )}
-                <Search className="ml-2 h-4 w-4 shrink-0 opacity-50" />
-              </Button>
-            </PopoverTrigger>
-            <PopoverContent className="w-full p-0 bg-gray-800 border-gray-600">
-              <Command className="bg-gray-800">
-                <CommandInput placeholder="Search tokens or paste CA..." className="text-white" />
-                <CommandList>
-                  <CommandEmpty className="text-gray-400">No token found.</CommandEmpty>
-                  <CommandGroup>
-                    {outputTokens.map((token) => (
-                      <CommandItem
-                        key={token.symbol}
-                        value={token.symbol}
-                        onSelect={() => {
-                          setToToken(token.symbol);
-                          setOpen(false);
-                        }}
-                        className="text-white hover:bg-gray-700"
-                      >
-                        <div className="flex items-center space-x-3 w-full">
-                          <div className="w-8 h-8 bg-gradient-to-r from-purple-500 to-pink-500 rounded-full flex items-center justify-center">
-                            {token.icon}
-                          </div>
-                          <div className="flex-1">
-                            <div className="font-medium">{token.symbol}</div>
-                            <div className="text-xs text-gray-400">{token.name}</div>
-                            <div className="text-xs text-gray-500 font-mono">{token.ca.slice(0, 8)}...</div>
-                          </div>
-                          <div className="text-right">
-                            <div className="text-sm">${token.price}</div>
-                            <div className={`text-xs flex items-center ${token.positive ? 'text-green-400' : 'text-red-400'}`}>
-                              {token.positive ? <TrendingUp className="w-3 h-3 mr-1" /> : <TrendingDown className="w-3 h-3 mr-1" />}
-                              {token.change}
-                            </div>
-                          </div>
-                        </div>
-                      </CommandItem>
-                    ))}
-                  </CommandGroup>
-                </CommandList>
-              </Command>
-            </PopoverContent>
-          </Popover>
+          <TokenSelector
+            selectedToken={toToken}
+            onSelectToken={handleTokenSelect}
+            placeholder="Select destination token..."
+          />
         </div>
 
         {/* Price Estimate */}
-        {amount && selectedOutputToken && (
+        {amount && toToken && (
           <div className="bg-gradient-to-r from-blue-900/30 to-purple-900/30 border border-blue-600/30 rounded-xl p-4">
             <div className="space-y-3">
               <div className="flex justify-between items-center">
                 <span className="text-blue-300 text-sm">Estimated Output</span>
-                <span className="text-white font-semibold">~{estimatedOutput} {toToken}</span>
+                <span className="text-white font-semibold">~{estimatedOutput} {toToken.symbol}</span>
               </div>
               <div className="flex justify-between items-center">
                 <span className="text-blue-300 text-sm">Rate</span>
-                <span className="text-white text-sm">1 USDC = {(1 / parseFloat(selectedOutputToken.price)).toFixed(2)} {toToken}</span>
+                <span className="text-white text-sm">1 USDC = {toToken.price ? (1 / parseFloat(toToken.price)).toFixed(2) : '0'} {toToken.symbol}</span>
               </div>
               <div className="flex justify-between items-center">
                 <span className="text-blue-300 text-sm">Price Impact</span>
@@ -301,7 +190,7 @@ export const SwapForm = ({ onComplete }: SwapFormProps) => {
         {/* Submit Intent Button */}
         <Button
           onClick={handleSubmitIntent}
-          disabled={!amount || parseFloat(amount) <= 0 || isLoading}
+          disabled={!amount || parseFloat(amount) <= 0 || !toToken || isLoading}
           className="w-full bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700 text-white font-medium py-6 text-lg rounded-xl transition-all duration-300 transform hover:scale-105 disabled:transform-none disabled:opacity-50"
         >
           {isLoading ? (
