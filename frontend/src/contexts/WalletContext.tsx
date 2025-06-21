@@ -1,20 +1,38 @@
-import { createContext, useState, ReactNode } from "react";
+"use client";
 
-interface WalletContextType {
-  isConnected: boolean;
-  setIsConnected: (connected: boolean) => void;
+import { WalletAdapterNetwork } from '@solana/wallet-adapter-base';
+import { ConnectionProvider, WalletProvider } from '@solana/wallet-adapter-react';
+import { PhantomWalletAdapter } from '@solana/wallet-adapter-phantom';
+import { WalletModalProvider } from '@solana/wallet-adapter-react-ui';
+import { clusterApiUrl } from '@solana/web3.js';
+import { FC, ReactNode, useMemo } from 'react';
+
+// Import the wallet adapter CSS
+import '@solana/wallet-adapter-react-ui/styles.css';
+
+interface WalletContextProviderProps {
+  children: ReactNode;
 }
 
-export const WalletContext = createContext<WalletContextType>({
-  isConnected: false,
-  setIsConnected: () => {},
-});
+export const WalletContextProvider: FC<WalletContextProviderProps> = ({ children }) => {
+  const network = WalletAdapterNetwork.Devnet;
 
-export const WalletProvider = ({ children }: { children: ReactNode }) => {
-  const [isConnected, setIsConnected] = useState(false);
-  return (
-    <WalletContext.Provider value={{ isConnected, setIsConnected }}>
-      {children}
-    </WalletContext.Provider>
+  const endpoint = useMemo(() => import.meta.env.VITE_SOLANA_RPC_URL || clusterApiUrl(network), [network]);
+
+  const wallets = useMemo(
+    () => [
+      new PhantomWalletAdapter(),
+    ],
+    [network]
   );
-}; 
+
+  return (
+    <ConnectionProvider endpoint={endpoint}>
+      <WalletProvider wallets={wallets} autoConnect>
+        <WalletModalProvider>{children}</WalletModalProvider>
+      </WalletProvider>
+    </ConnectionProvider>
+  );
+};
+
+export default WalletContextProvider;

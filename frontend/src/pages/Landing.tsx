@@ -1,7 +1,7 @@
 import { WalletConnect } from "@/components/WalletConnect";
-import { useContext, useEffect } from "react";
+import { useEffect } from "react";
 import { useNavigate } from "react-router-dom";
-import { WalletContext } from "@/contexts/WalletContext";
+import { useWallet } from '@solana/wallet-adapter-react';
 
 const features = [
   {
@@ -23,13 +23,13 @@ const features = [
 
 const Landing = () => {
   const navigate = useNavigate();
-  const { isConnected } = useContext(WalletContext);
+  const { connected } = useWallet();
 
   useEffect(() => {
-    if (isConnected) {
+    if (connected) {
       navigate("/app");
     }
-  }, [isConnected, navigate]);
+  }, [connected, navigate]);
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-gray-950 via-gray-900 to-gray-950 flex flex-col">

@@ -1,11 +1,10 @@
-import { useContext } from "react";
+import { useWallet } from '@solana/wallet-adapter-react';
 import { WalletConnect } from "@/components/WalletConnect";
 import { VaultInterface } from "@/components/VaultInterface";
 import { PrivacyBadge } from "@/components/PrivacyBadge";
-import { WalletContext } from "@/contexts/WalletContext";
 
 const Index = () => {
-  const { isConnected } = useContext(WalletContext);
+  const { connected } = useWallet();
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-gray-950 via-gray-900 to-gray-950 flex flex-col">
@@ -24,13 +23,13 @@ const Index = () => {
       <main className="flex-1 w-full max-w-7xl mx-auto px-4 py-8 flex flex-col gap-8">
         <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4 mb-4">
           <div className="flex items-center gap-3">
-            <h2 className="text-2xl md:text-3xl font-bold text-white">Welcome{isConnected ? ", User" : "!"}</h2>
+            <h2 className="text-2xl md:text-3xl font-bold text-white">Welcome{connected ? ", User" : "!"}</h2>
             <PrivacyBadge />
           </div>
           <div className="text-gray-400 text-sm md:text-base">All your private swaps, in one place.</div>
         </div>
         <section className="flex-1 flex flex-col">
-          {isConnected ? (
+          {connected ? (
             <VaultInterface />
           ) : (
             <div className="flex flex-col items-center justify-center flex-1 min-h-[300px] bg-gray-900/70 border border-gray-800/60 rounded-2xl p-8 text-center shadow-xl transition-all">

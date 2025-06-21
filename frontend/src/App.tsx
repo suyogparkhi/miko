@@ -6,12 +6,12 @@ import { BrowserRouter, Routes, Route } from "react-router-dom";
 import Index from "./pages/Index";
 import NotFound from "./pages/NotFound";
 import Landing from "./pages/Landing";
-import { WalletProvider } from "@/contexts/WalletContext";
+import { WalletContextProvider } from "@/contexts/WalletContext";
 
 const queryClient = new QueryClient();
 
 const App = () => (
-  <WalletProvider>
+  <WalletContextProvider>
     <QueryClientProvider client={queryClient}>
       <TooltipProvider>
         <Toaster />
@@ -26,7 +26,7 @@ const App = () => (
         </BrowserRouter>
       </TooltipProvider>
     </QueryClientProvider>
-  </WalletProvider>
+  </WalletContextProvider>
 );
 
 export default App;

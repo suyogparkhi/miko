@@ -16,53 +16,15 @@ export const VaultInterface = () => {
   const steps = [
     { id: "deposit", label: "Deposit", icon: "💰" },
     { id: "swap", label: "Swap Intent", icon: "🔄" },
-    { id: "status", label: "zk-Proof", icon: "🔐" },
+    // { id: "status", label: "zk-Proof", icon: "🔐" },
     { id: "withdraw", label: "Withdraw", icon: "📤" },
   ];
 
-  const navigationTabs = [
-    { id: "deposit", label: "Deposit", icon: "💰" },
-    { id: "swap", label: "Swap", icon: "🔄" },
-    { id: "status", label: "Status", icon: "🔐" },
-    { id: "withdraw", label: "Withdraw", icon: "📤" },
-    { id: "history", label: "History", icon: "📊" },
-  ];
 
   return (
     <div className="w-full max-w-6xl mx-auto px-2 sm:px-4">
       {/* Navigation Tabs */}
-      <nav className="flex flex-wrap items-center justify-center mb-8 gap-2 bg-gray-800/30 p-2 rounded-2xl backdrop-blur-sm transition-all duration-300" aria-label="Vault navigation">
-        {navigationTabs.map((tab) => {
-          const isActive = tab.id === currentStep;
-          const isAccessible = 
-            tab.id === "deposit" ||
-            (tab.id === "swap" && depositComplete) ||
-            (tab.id === "status" && swapIntent) ||
-            (tab.id === "withdraw" && proofReady) ||
-            tab.id === "history";
-          return (
-            <button
-              key={tab.id}
-              aria-current={isActive ? "page" : undefined}
-              aria-disabled={!isAccessible}
-              onClick={() => isAccessible && setCurrentStep(tab.id as VaultStep)}
-              disabled={!isAccessible}
-              className={`
-                flex items-center space-x-2 px-4 py-3 rounded-xl font-medium focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 transition-all duration-200
-                ${isActive 
-                  ? 'bg-gradient-to-r from-blue-600 to-purple-600 text-white shadow-lg scale-105' 
-                  : isAccessible
-                    ? 'text-gray-300 hover:text-white hover:bg-gray-700/50' 
-                    : 'text-gray-600 cursor-not-allowed'
-                }
-              `}
-            >
-              <span className="text-lg">{tab.icon}</span>
-              <span>{tab.label}</span>
-            </button>
-          );
-        })}
-      </nav>
+
 
       {/* Step Progress Indicator (only for main flow) */}
       {currentStep !== "history" && (
